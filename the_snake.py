@@ -129,7 +129,6 @@ def check_self_collision(snake_obj: Snake) -> bool:
 pygame.init()
 pygame.display.set_caption("Snake Game")
 
-# COLORES DEFINIDOS ARRIBA - ya no necesitamos WHITE
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
@@ -150,13 +149,12 @@ while running:
     if check_self_collision(snake):
         running = False
 
-    # Verificar si come fruta
+    # Verificar si come la fruta
     check_eat(snake, fruit)
-
-    # Dibujar todo con nuevos colores
-    screen.fill(BACKGROUND_COLOR)  # FONDO VERDE
-    fruit.draw(screen)  # MANZANA ROJA
-    snake.draw(screen)  # SERPIENTE GRIS
+    
+    screen.fill(BACKGROUND_COLOR)  
+    fruit.draw(screen)  
+    snake.draw(screen)  
 
     pygame.display.update()
     clock.tick(60)
