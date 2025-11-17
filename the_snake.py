@@ -109,7 +109,7 @@ def check_eat(snake_obj: Snake, fruit_obj: Fruits) -> None:
     head = snake_obj.body[0]
     head_rect = pygame.Rect(head.x, head.y, FRUIT_SIZE, FRUIT_SIZE)
     fruit_rect = pygame.Rect(fruit_obj.position.x,
-                            fruit_obj.position.y, FRUIT_SIZE, FRUIT_SIZE)
+                             fruit_obj.position.y, FRUIT_SIZE, FRUIT_SIZE)
 
     if head_rect.colliderect(fruit_rect):
         snake_obj.new_block = True
@@ -151,10 +151,10 @@ while running:
 
     # Verificar si come la fruta
     check_eat(snake, fruit)
-
-    screen.fill(BACKGROUND_COLOR)
-    fruit.draw(screen)
-    snake.draw(screen)
+    
+    screen.fill(BACKGROUND_COLOR)  
+    fruit.draw(screen)  
+    snake.draw(screen)  
 
     pygame.display.update()
     clock.tick(60)
