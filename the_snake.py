@@ -1,34 +1,29 @@
+"""
+Juego Snake clasico
+"""
 import sys
 import random
 import pygame
-from pygame.locals import (
-    QUIT,
-    KEYDOWN,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    USEREVENT,
-)
-from pygame.math import Vector2
 
-FRUIT_COLOR = (255, 0, 0)  # ROJO para la manzana
-SNAKE_COLOR = (128, 128, 128)  # GRIS para la serpiente
-BACKGROUND_COLOR = (144, 238, 144)  # VERDE para el fondo
+# Configuracion del juego
+FRUIT_COLOR = (255, 0, 0)
+SNAKE_COLOR = (128, 128, 128)
+BACKGROUND_COLOR = (144, 238, 144)
 FRUIT_SIZE = 20
-
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+GAME_SPEED = 150
+SCREEN_UPDATE = pygame.USEREVENT + 1
 
 
 class Fruits:
-    """Fruta del juego. Se posiciona aleatoriamente evitando la serpiente."""
-
+    """Clase para la fruta del juego"""
     def __init__(self):
-        self.position = Vector2(0, 0)
+        self.position = pygame.math.Vector2(0, 0)
         self.randomize([])
 
-    def draw(self, screen) -> None:
+    def draw(self, screen):
+        """Dibuja la fruta en pantalla"""
         rect = pygame.Rect(
             int(self.position.x),
             int(self.position.y),
@@ -37,32 +32,38 @@ class Fruits:
         )
         pygame.draw.rect(screen, FRUIT_COLOR, rect)
 
-    def randomize(self, occupied_positions) -> None:
+    def randomize(self, occupied_positions):
+        """Coloca la fruta en posicion aleatoria"""
         while True:
             x = random.randrange(0, SCREEN_WIDTH, FRUIT_SIZE)
             y = random.randrange(0, SCREEN_HEIGHT, FRUIT_SIZE)
-            candidate = Vector2(x, y)
+            candidate = pygame.math.Vector2(x, y)
             if candidate not in occupied_positions:
                 self.position = candidate
                 return
 
 
 class Snake:
-    """Serpiente controlada por el jugador."""
-
+    """Clase para la serpiente del juego"""
     def __init__(self):
-        self.body = [Vector2(100, 100), Vector2(80, 100), Vector2(60, 100)]
-        self.direction = Vector2(FRUIT_SIZE, 0)
+        self.body = [
+            pygame.math.Vector2(100, 100), 
+            pygame.math.Vector2(80, 100), 
+            pygame.math.Vector2(60, 100)
+        ]
+        self.direction = pygame.math.Vector2(FRUIT_SIZE, 0)
         self.new_block = False
 
-    def draw(self, screen) -> None:
+    def draw(self, screen):
+        """Dibuja la serpiente en pantalla"""
         for segment in self.body:
             x_pos = int(segment.x)
             y_pos = int(segment.y)
             segment_rect = pygame.Rect(x_pos, y_pos, FRUIT_SIZE, FRUIT_SIZE)
             pygame.draw.rect(screen, SNAKE_COLOR, segment_rect)
 
-    def move(self) -> None:
+    def move(self):
+        """Mueve la serpiente"""
         if self.direction.length() == 0:
             return
 
@@ -86,38 +87,42 @@ class Snake:
             self.body.pop()
 
 
-def handle_event(event: pygame.event.Event, snake_obj: Snake) -> None:
-    """Procesa eventos y actualiza la dirección o estado."""
-    if event.type == QUIT:
-        pygame.quit()
+def handle_event(event, snake_obj):
+    """Maneja los eventos del juego"""
+    if event.type == pygame.QUIT:
+        pygame.quit()  # pylint: disable=no-member
         sys.exit()
     if event.type == SCREEN_UPDATE:
         snake_obj.move()
-    if event.type == KEYDOWN:
-        if event.key == K_UP and snake_obj.direction.y <= 0:
-            snake_obj.direction = Vector2(0, -FRUIT_SIZE)
-        elif event.key == K_DOWN and snake_obj.direction.y >= 0:
-            snake_obj.direction = Vector2(0, FRUIT_SIZE)
-        elif event.key == K_LEFT and snake_obj.direction.x <= 0:
-            snake_obj.direction = Vector2(-FRUIT_SIZE, 0)
-        elif event.key == K_RIGHT and snake_obj.direction.x >= 0:
-            snake_obj.direction = Vector2(FRUIT_SIZE, 0)
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_UP and snake_obj.direction.y <= 0:
+            snake_obj.direction = pygame.math.Vector2(0, -FRUIT_SIZE)
+        elif event.key == pygame.K_DOWN and snake_obj.direction.y >= 0:
+            snake_obj.direction = pygame.math.Vector2(0, FRUIT_SIZE)
+        elif event.key == pygame.K_LEFT and snake_obj.direction.x <= 0:
+            snake_obj.direction = pygame.math.Vector2(-FRUIT_SIZE, 0)
+        elif event.key == pygame.K_RIGHT and snake_obj.direction.x >= 0:
+            snake_obj.direction = pygame.math.Vector2(FRUIT_SIZE, 0)
 
 
-def check_eat(snake_obj: Snake, fruit_obj: Fruits) -> None:
-    """Comprueba si la serpiente come la fruta y la reubica."""
+def check_eat(snake_obj, fruit_obj):
+    """Verifica si la serpiente come la fruta"""
     head = snake_obj.body[0]
     head_rect = pygame.Rect(head.x, head.y, FRUIT_SIZE, FRUIT_SIZE)
-    fruit_rect = pygame.Rect(fruit_obj.position.x,
-                             fruit_obj.position.y, FRUIT_SIZE, FRUIT_SIZE)
+    fruit_rect = pygame.Rect(
+        fruit_obj.position.x,
+        fruit_obj.position.y,
+        FRUIT_SIZE,
+        FRUIT_SIZE
+    )
 
     if head_rect.colliderect(fruit_rect):
         snake_obj.new_block = True
         fruit_obj.randomize(snake_obj.body)
 
 
-def check_self_collision(snake_obj: Snake) -> bool:
-    """Verifica si la serpiente choca consigo misma."""
+def check_self_collision(snake_obj):
+    """Verifica colision con si misma"""
     head = snake_obj.body[0]
     for segment in snake_obj.body[1:]:
         if head == segment:
@@ -125,39 +130,37 @@ def check_self_collision(snake_obj: Snake) -> bool:
     return False
 
 
-# Inicialización de pygame
-pygame.init()
-pygame.display.set_caption("Snake Game")
+def main():
+    """Funcion principal del juego"""
+    pygame.init()  # pylint: disable=no-member
+    pygame.display.set_caption("Snake Game")
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock = pygame.time.Clock()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
 
-# Creación de objetos
-fruit = Fruits()
-snake = Snake()
+    fruit = Fruits()
+    snake = Snake()
 
-SCREEN_UPDATE = USEREVENT + 1
-pygame.time.set_timer(SCREEN_UPDATE, 150)
+    pygame.time.set_timer(SCREEN_UPDATE, GAME_SPEED)
 
-# Bucle principal del juego
-running = True
-while running:
-    for event in pygame.event.get():
-        handle_event(event, snake)
+    running = True
+    while running:
+        for event in pygame.event.get():
+            handle_event(event, snake)
 
-    # Verificar colisión consigo misma
-    if check_self_collision(snake):
-        running = False
+        if check_self_collision(snake):
+            running = False
 
-    # Verificar si come la fruta
-    check_eat(snake, fruit)
-    
-    screen.fill(BACKGROUND_COLOR)  
-    fruit.draw(screen)  
-    snake.draw(screen)  
+        check_eat(snake, fruit)
+        screen.fill(BACKGROUND_COLOR)
+        fruit.draw(screen)
+        snake.draw(screen)
 
-    pygame.display.update()
-    clock.tick(60)
+        pygame.display.update()
+        clock.tick(60)
 
-# Salir del juego
-pygame.quit()
+    pygame.quit()  # pylint: disable=no-member
+
+
+if __name__ == "__main__":
+    main()
