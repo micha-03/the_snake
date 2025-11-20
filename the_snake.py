@@ -47,8 +47,8 @@ class Snake:
     """Clase para la serpiente del juego"""
     def __init__(self):
         self.body = [
-            pygame.math.Vector2(100, 100), 
-            pygame.math.Vector2(80, 100), 
+            pygame.math.Vector2(100, 100),
+            pygame.math.Vector2(80, 100),
             pygame.math.Vector2(60, 100)
         ]
         self.direction = pygame.math.Vector2(FRUIT_SIZE, 0)
