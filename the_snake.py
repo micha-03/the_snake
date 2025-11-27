@@ -2,8 +2,28 @@
 Juego Snake clasico
 """
 import sys
+import subprocess
 import random
-import pygame
+
+# Verificar e instalar pygame si es necesario
+try:
+    import pygame
+    from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT
+    from pygame.math import Vector2
+except ImportError:
+    print("Pygame no encontrado. Instalando...")
+    try:
+        # Instalacion silenciosa de pygame
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "pygame"
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        import pygame
+        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT
+        from pygame.math import Vector2
+        print("Pygame instalado exitosamente")
+    except (subprocess.CalledProcessError, ImportError) as e:
+        print(f"Error al instalar pygame: {e}")
+        sys.exit(1)
 
 # Configuracion del juego
 FRUIT_COLOR = (255, 0, 0)
@@ -13,13 +33,14 @@ FRUIT_SIZE = 20
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 GAME_SPEED = 150
-SCREEN_UPDATE = pygame.USEREVENT + 1
+SCREEN_UPDATE = USEREVENT + 1
 
 
 class Fruits:
     """Clase para la fruta del juego"""
+
     def __init__(self):
-        self.position = pygame.math.Vector2(0, 0)
+        self.position = Vector2(0, 0)
         self.randomize([])
 
     def draw(self, screen):
@@ -34,24 +55,30 @@ class Fruits:
 
     def randomize(self, occupied_positions):
         """Coloca la fruta en posicion aleatoria"""
-        while True:
-            x = random.randrange(0, SCREEN_WIDTH, FRUIT_SIZE)
-            y = random.randrange(0, SCREEN_HEIGHT, FRUIT_SIZE)
-            candidate = pygame.math.Vector2(x, y)
+        max_x = SCREEN_WIDTH // FRUIT_SIZE
+        max_y = SCREEN_HEIGHT // FRUIT_SIZE
+
+        for _ in range(100):  # Intentar maximo 100 veces
+            x_pos = random.randint(0, max_x - 1) * FRUIT_SIZE
+            y_pos = random.randint(0, max_y - 1) * FRUIT_SIZE
+            candidate = Vector2(x_pos, y_pos)
             if candidate not in occupied_positions:
                 self.position = candidate
                 return
+        # Fallback si no encuentra posicion libre
+        self.position = Vector2(FRUIT_SIZE, FRUIT_SIZE)
 
 
 class Snake:
     """Clase para la serpiente del juego"""
+
     def __init__(self):
         self.body = [
-            pygame.math.Vector2(100, 100),
-            pygame.math.Vector2(80, 100),
-            pygame.math.Vector2(60, 100)
+            Vector2(100, 100),
+            Vector2(80, 100),
+            Vector2(60, 100)
         ]
-        self.direction = pygame.math.Vector2(FRUIT_SIZE, 0)
+        self.direction = Vector2(FRUIT_SIZE, 0)
         self.new_block = False
 
     def draw(self, screen):
@@ -67,99 +94,102 @@ class Snake:
         if self.direction.length() == 0:
             return
 
-        new_head = self.body[0] + self.direction
-
-        # Wrap around en los bordes
-        if new_head.x >= SCREEN_WIDTH:
-            new_head.x = 0
-        elif new_head.x < 0:
-            new_head.x = SCREEN_WIDTH - FRUIT_SIZE
-        if new_head.y >= SCREEN_HEIGHT:
-            new_head.y = 0
-        elif new_head.y < 0:
-            new_head.y = SCREEN_HEIGHT - FRUIT_SIZE
-
         if self.new_block:
-            self.body.insert(0, new_head)
+            new_body = [self.body[0] + self.direction] + self.body
+            self.body = new_body
             self.new_block = False
         else:
-            self.body.insert(0, new_head)
-            self.body.pop()
+            new_body = [self.body[0] + self.direction] + self.body[:-1]
+            self.body = new_body
+
+        # Ajustar posicion si se sale de la pantalla
+        head = self.body[0]
+        if head.x >= SCREEN_WIDTH:
+            head.x = 0
+        elif head.x < 0:
+            head.x = SCREEN_WIDTH - FRUIT_SIZE
+        if head.y >= SCREEN_HEIGHT:
+            head.y = 0
+        elif head.y < 0:
+            head.y = SCREEN_HEIGHT - FRUIT_SIZE
 
 
 def handle_event(event, snake_obj):
     """Maneja los eventos del juego"""
-    if event.type == pygame.QUIT:
-        pygame.quit()  # pylint: disable=no-member
+    if event.type == QUIT:
+        pygame.quit()
         sys.exit()
     if event.type == SCREEN_UPDATE:
         snake_obj.move()
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_UP and snake_obj.direction.y <= 0:
-            snake_obj.direction = pygame.math.Vector2(0, -FRUIT_SIZE)
-        elif event.key == pygame.K_DOWN and snake_obj.direction.y >= 0:
-            snake_obj.direction = pygame.math.Vector2(0, FRUIT_SIZE)
-        elif event.key == pygame.K_LEFT and snake_obj.direction.x <= 0:
-            snake_obj.direction = pygame.math.Vector2(-FRUIT_SIZE, 0)
-        elif event.key == pygame.K_RIGHT and snake_obj.direction.x >= 0:
-            snake_obj.direction = pygame.math.Vector2(FRUIT_SIZE, 0)
+    if event.type == KEYDOWN:
+        if event.key == K_UP and snake_obj.direction.y == 0:
+            snake_obj.direction = Vector2(0, -FRUIT_SIZE)
+        elif event.key == K_DOWN and snake_obj.direction.y == 0:
+            snake_obj.direction = Vector2(0, FRUIT_SIZE)
+        elif event.key == K_LEFT and snake_obj.direction.x == 0:
+            snake_obj.direction = Vector2(-FRUIT_SIZE, 0)
+        elif event.key == K_RIGHT and snake_obj.direction.x == 0:
+            snake_obj.direction = Vector2(FRUIT_SIZE, 0)
 
 
 def check_eat(snake_obj, fruit_obj):
     """Verifica si la serpiente come la fruta"""
     head = snake_obj.body[0]
-    head_rect = pygame.Rect(head.x, head.y, FRUIT_SIZE, FRUIT_SIZE)
-    fruit_rect = pygame.Rect(
-        fruit_obj.position.x,
-        fruit_obj.position.y,
-        FRUIT_SIZE,
-        FRUIT_SIZE
-    )
-
-    if head_rect.colliderect(fruit_rect):
+    if head == fruit_obj.position:
         snake_obj.new_block = True
         fruit_obj.randomize(snake_obj.body)
+        return True
+    return False
 
 
 def check_self_collision(snake_obj):
     """Verifica colision con si misma"""
     head = snake_obj.body[0]
-    for segment in snake_obj.body[1:]:
-        if head == segment:
-            return True
-    return False
+    return any(head == segment for segment in snake_obj.body[1:])
 
 
 def main():
     """Funcion principal del juego"""
-    pygame.init()  # pylint: disable=no-member
+    # Inicializar pygame
+    pygame.init()
+
+    # Crear ventana
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Snake Game")
 
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    # Crear objetos del juego
     clock = pygame.time.Clock()
-
     fruit = Fruits()
     snake = Snake()
 
+    # Configurar timer para actualizacion del juego
     pygame.time.set_timer(SCREEN_UPDATE, GAME_SPEED)
 
+    # Bucle principal del juego
     running = True
     while running:
+        # Manejar eventos
         for event in pygame.event.get():
             handle_event(event, snake)
 
+        # Verificar colisiones
         if check_self_collision(snake):
             running = False
 
+        # Verificar si come fruta
         check_eat(snake, fruit)
+
+        # Dibujar todo
         screen.fill(BACKGROUND_COLOR)
         fruit.draw(screen)
         snake.draw(screen)
-
         pygame.display.update()
+
+        # Controlar FPS
         clock.tick(60)
 
-    pygame.quit()  # pylint: disable=no-member
+    # Salir del juego
+    pygame.quit()
 
 
 if __name__ == "__main__":
