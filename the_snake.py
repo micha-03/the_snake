@@ -18,7 +18,8 @@ except ImportError:
             sys.executable, "-m", "pip", "install", "pygame"
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import pygame
-        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT
+        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT, 
+        from pygame import K_RIGHT
         from pygame.math import Vector2
         print("Pygame instalado exitosamente")
     except (subprocess.CalledProcessError, ImportError) as e:
