@@ -1,4 +1,6 @@
 """Juego Snake clasico."""
+#  pylint: disable=print-statement,import-error,no-member
+
 import random
 import subprocess
 import sys
@@ -6,11 +8,7 @@ import sys
 # Verificar e instalar pygame si es necesario
 try:
     import pygame
-    from pygame.locals import (
-        USEREVENT, QUIT, KEYDOWN,
-        K_UP, K_DOWN, K_RIGHT, K_LEFT
-    )
-    from pygame.math import Vector2
+    # pylint: disable=no-member
 except ImportError:
     print('Pygame не найден. Установка...')
     try:
@@ -20,15 +18,18 @@ except ImportError:
             '--root-user-action=ignore'
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import pygame
-        from pygame.locals import (
-            USEREVENT, QUIT, KEYDOWN,
-            K_UP, K_DOWN, K_RIGHT, K_LEFT
-        )
-        from pygame.math import Vector2
+        # pylint: disable=no-member
         print('Pygame успешно установлен.')
     except (subprocess.CalledProcessError, ImportError) as e:
         print(f'Ошибка при установке pygame: {e}')
         sys.exit(1)
+
+# Ahora importar las partes específicas de pygame
+from pygame.locals import (
+    USEREVENT, QUIT, KEYDOWN,
+    K_UP, K_DOWN, K_LEFT, K_RIGHT
+)
+from pygame.math import Vector2
 
 # Configuracion del juego
 FRUIT_COLOR = (255, 0, 0)
