@@ -1,9 +1,7 @@
-"""
-Juego Snake clasico
-"""
-import sys
-import subprocess
+"""Juego Snake clasico."""
 import random
+import subprocess
+import sys
 
 # Verificar e instalar pygame si es necesario
 try:
@@ -12,19 +10,19 @@ try:
     from pygame.locals import K_RIGHT, K_LEFT
     from pygame.math import Vector2
 except ImportError:
-    print("Pygame no encontrado. Instalando...")
+    print('Pygame не найден. Установка...')
     try:
         # Instalacion silenciosa de pygame
         subprocess.check_call([
-            sys.executable, "-m", "pip", "install", "pygame"
+            sys.executable, '-m', 'pip', 'install', 'pygame', '--root-user-action=ignore'
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import pygame
         from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN
         from pygame import K_RIGHT, K_LEFT
         from pygame.math import Vector2
-        print("Pygame instalado exitosamente")
+        print('Pygame успешно установлен.')
     except (subprocess.CalledProcessError, ImportError) as e:
-        print(f"Error al instalar pygame: {e}")
+        print(f'Ошибка при установке pygame: {e}')
         sys.exit(1)
 
 # Configuracion del juego
@@ -39,14 +37,14 @@ SCREEN_UPDATE = USEREVENT + 1
 
 
 class Fruits:
-    """Clase para la fruta del juego"""
+    """Clase para la fruta del juego."""
 
     def __init__(self):
         self.position = Vector2(0, 0)
         self.randomize([])
 
     def draw(self, screen):
-        """Dibuja la fruta en pantalla"""
+        """Dibuja la fruta en pantalla."""
         rect = pygame.Rect(
             int(self.position.x),
             int(self.position.y),
@@ -56,11 +54,11 @@ class Fruits:
         pygame.draw.rect(screen, FRUIT_COLOR, rect)
 
     def randomize(self, occupied_positions):
-        """Coloca la fruta en posicion aleatoria"""
+        """Coloca la fruta en posicion aleatoria."""
         max_x = SCREEN_WIDTH // FRUIT_SIZE
         max_y = SCREEN_HEIGHT // FRUIT_SIZE
 
-        for _ in range(100):  # Intentar maximo 100 veces
+        for _ in range(100): # Intentar maximo 100 veces
             x_pos = random.randint(0, max_x - 1) * FRUIT_SIZE
             y_pos = random.randint(0, max_y - 1) * FRUIT_SIZE
             candidate = Vector2(x_pos, y_pos)
@@ -72,7 +70,7 @@ class Fruits:
 
 
 class Snake:
-    """Clase para la serpiente del juego"""
+    """Clase para la serpiente del juego."""
 
     def __init__(self):
         self.body = [
@@ -84,7 +82,7 @@ class Snake:
         self.new_block = False
 
     def draw(self, screen):
-        """Dibuja la serpiente en pantalla"""
+        """Dibuja la serpiente en pantalla."""
         for segment in self.body:
             x_pos = int(segment.x)
             y_pos = int(segment.y)
@@ -92,7 +90,7 @@ class Snake:
             pygame.draw.rect(screen, SNAKE_COLOR, segment_rect)
 
     def move(self):
-        """Mueve la serpiente"""
+        """Mueve la serpiente."""
         if self.direction.length() == 0:
             return
 
@@ -117,7 +115,7 @@ class Snake:
 
 
 def handle_event(event, snake_obj):
-    """Maneja los eventos del juego"""
+    """Maneja los eventos del juego."""
     if event.type == QUIT:
         pygame.quit() # pylint: disable=no-member
         sys.exit()
@@ -135,7 +133,7 @@ def handle_event(event, snake_obj):
 
 
 def check_eat(snake_obj, fruit_obj):
-    """Verifica si la serpiente come la fruta"""
+    """Verifica si la serpiente come la fruta."""
     head = snake_obj.body[0]
     if head == fruit_obj.position:
         snake_obj.new_block = True
@@ -145,19 +143,19 @@ def check_eat(snake_obj, fruit_obj):
 
 
 def check_self_collision(snake_obj):
-    """Verifica colision con si misma"""
+    """Verifica colision con si misma."""
     head = snake_obj.body[0]
     return any(head == segment for segment in snake_obj.body[1:])
 
 
 def main():
-    """Funcion principal del juego"""
+    """Funcion principal del juego."""
     # Inicializar pygame
     pygame.init() # pylint: disable=no-member
 
     # Crear ventana
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Snake Game")
+    pygame.display.set_caption('Snake Game')
 
     # Crear objetos del juego
     clock = pygame.time.Clock()
@@ -194,5 +192,5 @@ def main():
     pygame.quit() # pylint: disable=no-member
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
