@@ -8,7 +8,8 @@ import random
 # Verificar e instalar pygame si es necesario
 try:
     import pygame
-    from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT
+    from pygame.locals import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN
+    from pygame.locals import K_RIGHT, K_LEFT
     from pygame.math import Vector2
 except ImportError:
     print("Pygame no encontrado. Instalando...")
@@ -18,8 +19,8 @@ except ImportError:
             sys.executable, "-m", "pip", "install", "pygame"
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import pygame
-        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN, K_LEFT
-        from pygame import K_RIGHT
+        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN
+        from pygame import K_RIGHT, K_LEFT
         from pygame.math import Vector2
         print("Pygame instalado exitosamente")
     except (subprocess.CalledProcessError, ImportError) as e:
@@ -118,7 +119,7 @@ class Snake:
 def handle_event(event, snake_obj):
     """Maneja los eventos del juego"""
     if event.type == QUIT:
-        pygame.quit()
+        pygame.quit() # pylint: disable=no-member
         sys.exit()
     if event.type == SCREEN_UPDATE:
         snake_obj.move()
@@ -152,7 +153,7 @@ def check_self_collision(snake_obj):
 def main():
     """Funcion principal del juego"""
     # Inicializar pygame
-    pygame.init()
+    pygame.init() # pylint: disable=no-member
 
     # Crear ventana
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -190,7 +191,7 @@ def main():
         clock.tick(60)
 
     # Salir del juego
-    pygame.quit()
+    pygame.quit() # pylint: disable=no-member
 
 
 if __name__ == "__main__":
