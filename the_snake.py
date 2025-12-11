@@ -6,19 +6,24 @@ import sys
 # Verificar e instalar pygame si es necesario
 try:
     import pygame
-    from pygame.locals import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN
-    from pygame.locals import K_RIGHT, K_LEFT
+    from pygame.locals import (
+        USEREVENT, QUIT, KEYDOWN,
+        K_UP, K_DOWN, K_RIGHT, K_LEFT
+    )
     from pygame.math import Vector2
 except ImportError:
     print('Pygame не найден. Установка...')
     try:
         # Instalacion silenciosa de pygame
         subprocess.check_call([
-            sys.executable, '-m', 'pip', 'install', 'pygame', '--root-user-action=ignore'
+            sys.executable, '-m', 'pip', 'install', 'pygame',
+            '--root-user-action=ignore'
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import pygame
-        from pygame import USEREVENT, QUIT, KEYDOWN, K_UP, K_DOWN
-        from pygame import K_RIGHT, K_LEFT
+        from pygame.locals import (
+            USEREVENT, QUIT, KEYDOWN,
+            K_UP, K_DOWN, K_RIGHT, K_LEFT
+        )
         from pygame.math import Vector2
         print('Pygame успешно установлен.')
     except (subprocess.CalledProcessError, ImportError) as e:
@@ -58,7 +63,7 @@ class Fruits:
         max_x = SCREEN_WIDTH // FRUIT_SIZE
         max_y = SCREEN_HEIGHT // FRUIT_SIZE
 
-        for _ in range(100): # Intentar maximo 100 veces
+        for _ in range(100):  # Intentar maximo 100 veces
             x_pos = random.randint(0, max_x - 1) * FRUIT_SIZE
             y_pos = random.randint(0, max_y - 1) * FRUIT_SIZE
             candidate = Vector2(x_pos, y_pos)
@@ -117,7 +122,7 @@ class Snake:
 def handle_event(event, snake_obj):
     """Maneja los eventos del juego."""
     if event.type == QUIT:
-        pygame.quit() # pylint: disable=no-member
+        pygame.quit()  # pylint: disable=no-member
         sys.exit()
     if event.type == SCREEN_UPDATE:
         snake_obj.move()
@@ -151,7 +156,7 @@ def check_self_collision(snake_obj):
 def main():
     """Funcion principal del juego."""
     # Inicializar pygame
-    pygame.init() # pylint: disable=no-member
+    pygame.init()  # pylint: disable=no-member
 
     # Crear ventana
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -189,7 +194,7 @@ def main():
         clock.tick(60)
 
     # Salir del juego
-    pygame.quit() # pylint: disable=no-member
+    pygame.quit()  # pylint: disable=no-member
 
 
 if __name__ == '__main__':
