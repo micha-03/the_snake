@@ -3,6 +3,7 @@
 
 import random
 import sys
+
 import pygame
 
 # Configuración del juego
@@ -41,7 +42,9 @@ class Fruit:
 
     def draw(self, screen):
         """Dibuja la fruta en pantalla."""
-        rect = pygame.Rect(self.position[0], self.position[1], FRUIT_SIZE, FRUIT_SIZE)
+        rect = pygame.Rect(
+            self.position[0], self.position[1], FRUIT_SIZE, FRUIT_SIZE
+        )
         pygame.draw.rect(screen, FRUIT_COLOR, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
@@ -59,7 +62,9 @@ class Snake:
         """Mueve la serpiente."""
         head_x, head_y = self.body[0]
         dx, dy = self.direction
-        new_head = ((head_x + dx) % SCREEN_WIDTH, (head_y + dy) % SCREEN_HEIGHT)
+        new_head = (
+            (head_x + dx) % SCREEN_WIDTH, (head_y + dy) % SCREEN_HEIGHT
+        )
         self.body.insert(0, new_head)
         if not self.grow:
             self.body.pop()
@@ -69,7 +74,9 @@ class Snake:
     def draw(self, screen):
         """Dibuja la serpiente en pantalla."""
         for segment in self.body:
-            rect = pygame.Rect(segment[0], segment[1], FRUIT_SIZE, FRUIT_SIZE)
+            rect = pygame.Rect(
+                segment[0], segment[1], FRUIT_SIZE, FRUIT_SIZE
+            )
             pygame.draw.rect(screen, SNAKE_COLOR, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
