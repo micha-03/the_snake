@@ -76,7 +76,7 @@ class Snake(GameObject):
         self.position = self.positions[0]
 
     def get_head_position(self):
-        """Return the position of the snake's head. """
+        """Return the position of the snake's head."""
         return self.positions[0]
 
     def update_direction(self, new_direction):
