@@ -1,137 +1,161 @@
 # pylint: disable=E1101
-"""Juego Snake clásico."""
+"""Snake game"""
 
 import random
 import sys
 
 import pygame
 
-# Configuración del juego
+# Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-FRUIT_SIZE = 20
-GAME_SPEED = 150
+GRID_SIZE = 20
+GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
+GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 
-BACKGROUND_COLOR = (0, 0, 0)
-SNAKE_COLOR = (0, 200, 0)
-FRUIT_COLOR = (255, 0, 0)
-BORDER_COLOR = (0, 0, 0)
+BOARD_BACKGROUND_COLOR = (0, 0, 0)
 
-SCREEN_UPDATE = pygame.USEREVENT + 1
+UP = (0, -1)
+DOWN = (0, 1)
+LEFT = (-1, 0)
+RIGHT = (1, 0)
+
+# Will be initialized in main
+screen = None
+clock = None
 
 
-class Fruit:
-    """Representa la fruta del juego."""
+class GameObject:
+    """Base class for game objects."""
 
-    def __init__(self):
-        """Inicializa la fruta."""
-        self.position = (0, 0)
-        self.randomize([])
+    def __init__(self, position, body_color):
+        """Initialize game object."""
+        self.position = position
+        self.body_color = body_color
 
-    def randomize(self, occupied_positions):
-        """Coloca la fruta en una posición libre."""
-        max_x = SCREEN_WIDTH // FRUIT_SIZE
-        max_y = SCREEN_HEIGHT // FRUIT_SIZE
-        for _ in range(100):
-            x_pos = random.randint(0, max_x - 1) * FRUIT_SIZE
-            y_pos = random.randint(0, max_y - 1) * FRUIT_SIZE
-            if (x_pos, y_pos) not in occupied_positions:
-                self.position = (x_pos, y_pos)
-                return
-        self.position = (FRUIT_SIZE, FRUIT_SIZE)
-
-    def draw(self, screen):
-        """Dibuja la fruta en pantalla."""
+    def draw(self, surface):
+        """Draw object on screen."""
         rect = pygame.Rect(
-            self.position[0], self.position[1], FRUIT_SIZE, FRUIT_SIZE
+            self.position[0],
+            self.position[1],
+            GRID_SIZE,
+            GRID_SIZE,
         )
-        pygame.draw.rect(screen, FRUIT_COLOR, rect)
-        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+        pygame.draw.rect(surface, self.body_color, rect)
+        pygame.draw.rect(surface, (0, 0, 0), rect, 1)
 
 
-class Snake:
-    """Representa la serpiente."""
+class Apple(GameObject):
+    """Apple object."""
 
     def __init__(self):
-        """Inicializa la serpiente como un único bloque."""
-        self.body = [(100, 100)]
-        self.direction = (FRUIT_SIZE, 0)
-        self.grow = False
+        """Initialize apple."""
+        super().__init__((0, 0), (255, 0, 0))
+        self.randomize_position([])
+
+    def randomize_position(self, occupied_positions):
+        """Place apple in random free cell."""
+        while True:
+            x = random.randint(0, GRID_WIDTH - 1) * GRID_SIZE
+            y = random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+            if (x, y) not in occupied_positions:
+                self.position = (x, y)
+                return
+
+
+class Snake(GameObject):
+    """Snake object."""
+
+    def __init__(self):
+        """Initialize snake."""
+        self.positions = [(100, 100)]
+        self.direction = RIGHT
+        super().__init__(self.positions[0], (0, 200, 0))
+
+    def get_head_position(self):
+        """Return snake head position."""
+        return self.positions[0]
+
+    def update_direction(self, new_direction):
+        """Update movement direction."""
+        opposite = (-self.direction[0], -self.direction[1])
+        if new_direction != opposite:
+            self.direction = new_direction
 
     def move(self):
-        """Mueve la serpiente."""
-        head_x, head_y = self.body[0]
+        """Move snake."""
+        head_x, head_y = self.get_head_position()
         dx, dy = self.direction
         new_head = (
-            (head_x + dx) % SCREEN_WIDTH, (head_y + dy) % SCREEN_HEIGHT
+            (head_x + dx * GRID_SIZE) % SCREEN_WIDTH,
+            (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT,
         )
-        self.body.insert(0, new_head)
-        if not self.grow:
-            self.body.pop()
-        else:
-            self.grow = False
+        self.positions.insert(0, new_head)
+        self.positions.pop()
+        self.position = new_head
 
-    def draw(self, screen):
-        """Dibuja la serpiente en pantalla."""
-        for segment in self.body:
+    def reset(self):
+        """Reset snake to initial state."""
+        self.positions = [(100, 100)]
+        self.direction = RIGHT
+        self.position = self.positions[0]
+
+    def draw(self, surface):
+        """Draw snake."""
+        for position in self.positions:
             rect = pygame.Rect(
-                segment[0], segment[1], FRUIT_SIZE, FRUIT_SIZE
+                position[0],
+                position[1],
+                GRID_SIZE,
+                GRID_SIZE,
             )
-            pygame.draw.rect(screen, SNAKE_COLOR, rect)
-            pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-    def check_self_collision(self):
-        """Detecta colisión consigo misma."""
-        return self.body[0] in self.body[1:]
+            pygame.draw.rect(surface, self.body_color, rect)
+            pygame.draw.rect(surface, (0, 0, 0), rect, 1)
 
 
-def handle_events(snake):
-    """Gestiona eventos del teclado."""
+def handle_keys(snake):
+    """Handle keyboard input."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
         if event.type == pygame.KEYDOWN:
-            dx, dy = snake.direction
-            if event.key == pygame.K_UP and dy == 0:
-                snake.direction = (0, -FRUIT_SIZE)
-            elif event.key == pygame.K_DOWN and dy == 0:
-                snake.direction = (0, FRUIT_SIZE)
-            elif event.key == pygame.K_LEFT and dx == 0:
-                snake.direction = (-FRUIT_SIZE, 0)
-            elif event.key == pygame.K_RIGHT and dx == 0:
-                snake.direction = (FRUIT_SIZE, 0)
-        if event.type == SCREEN_UPDATE:
-            snake.move()
+            if event.key == pygame.K_UP:
+                snake.update_direction(UP)
+            elif event.key == pygame.K_DOWN:
+                snake.update_direction(DOWN)
+            elif event.key == pygame.K_LEFT:
+                snake.update_direction(LEFT)
+            elif event.key == pygame.K_RIGHT:
+                snake.update_direction(RIGHT)
 
 
 def main():
-    """Función principal del juego."""
+    """Main game loop."""
+    global screen, clock
+
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Snake Game')
+    pygame.display.set_caption("Snake")
     clock = pygame.time.Clock()
+
     snake = Snake()
-    fruit = Fruit()
-    pygame.time.set_timer(SCREEN_UPDATE, GAME_SPEED)
+    apple = Apple()
 
     while True:
-        handle_events(snake)
+        handle_keys(snake)
+        snake.move()
 
-        if snake.body[0] == fruit.position:
-            snake.grow = True
-            fruit.randomize(snake.body)
+        if snake.get_head_position() == apple.position:
+            apple.randomize_position(snake.positions)
 
-        if snake.check_self_collision():
-            pygame.quit()
-            sys.exit()
-
-        screen.fill(BACKGROUND_COLOR)
-        fruit.draw(screen)
+        screen.fill(BOARD_BACKGROUND_COLOR)
+        apple.draw(screen)
         snake.draw(screen)
-        pygame.display.update()
-        clock.tick(60)
+        pygame.display.flip()
+        clock.tick(10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
