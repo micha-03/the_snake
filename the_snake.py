@@ -5,6 +5,7 @@ import random
 import sys
 import pygame
 
+
 # Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -32,6 +33,7 @@ class GameObject:
         self.body_color = (255, 255, 255)
 
     def draw(self, surface):
+        """Draw the object on the surface."""
         pass
 
 
@@ -53,6 +55,7 @@ class Apple(GameObject):
                 return
 
     def draw(self, surface):
+        """Draw the apple on the surface."""
         rect = pygame.Rect(
             self.position[0],
             self.position[1],
@@ -73,14 +76,17 @@ class Snake(GameObject):
         self.position = self.positions[0]
 
     def get_head_position(self):
+        """Return the position of the snake's head. """
         return self.positions[0]
 
     def update_direction(self, new_direction):
+        """Update the snake's direction."""
         opposite = (-self.direction[0], -self.direction[1])
         if new_direction != opposite:
             self.direction = new_direction
 
     def move(self):
+        """Move the snake in the current direction."""
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
         new_head = (
@@ -92,14 +98,17 @@ class Snake(GameObject):
         self.position = new_head
 
     def grow(self):
+        """Grow the snake by adding a new segment."""
         self.positions.append(self.positions[-1])
 
     def reset(self):
+        """Reset the snake to the initial state."""
         self.positions = [(100, 100)]
         self.direction = RIGHT
         self.position = self.positions[0]
 
     def draw(self, surface):
+        """Draw the snake on the surface."""
         for position in self.positions:
             rect = pygame.Rect(
                 position[0],
