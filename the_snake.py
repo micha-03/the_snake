@@ -3,7 +3,6 @@
 
 import random
 import sys
-
 import pygame
 
 # Constants
@@ -20,37 +19,28 @@ DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 
-# Will be initialized in main
-screen = None
-clock = None
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
 
 
 class GameObject:
     """Base class for game objects."""
 
-    def __init__(self, position, body_color):
-        """Initialize game object."""
-        self.position = position
-        self.body_color = body_color
+    def __init__(self):
+        self.position = (0, 0)
+        self.body_color = (255, 255, 255)
 
     def draw(self, surface):
-        """Draw object on screen."""
-        rect = pygame.Rect(
-            self.position[0],
-            self.position[1],
-            GRID_SIZE,
-            GRID_SIZE,
-        )
-        pygame.draw.rect(surface, self.body_color, rect)
-        pygame.draw.rect(surface, (0, 0, 0), rect, 1)
+        pass
 
 
 class Apple(GameObject):
     """Apple object."""
 
     def __init__(self):
-        """Initialize apple."""
-        super().__init__((0, 0), (255, 0, 0))
+        super().__init__()
+        self.body_color = (255, 0, 0)
         self.randomize_position([])
 
     def randomize_position(self, occupied_positions):
@@ -62,28 +52,35 @@ class Apple(GameObject):
                 self.position = (x, y)
                 return
 
+    def draw(self, surface):
+        rect = pygame.Rect(
+            self.position[0],
+            self.position[1],
+            GRID_SIZE,
+            GRID_SIZE,
+        )
+        pygame.draw.rect(surface, self.body_color, rect)
+
 
 class Snake(GameObject):
     """Snake object."""
 
     def __init__(self):
-        """Initialize snake."""
+        super().__init__()
         self.positions = [(100, 100)]
         self.direction = RIGHT
-        super().__init__(self.positions[0], (0, 200, 0))
+        self.body_color = (0, 200, 0)
+        self.position = self.positions[0]
 
     def get_head_position(self):
-        """Return snake head position."""
         return self.positions[0]
 
     def update_direction(self, new_direction):
-        """Update movement direction."""
         opposite = (-self.direction[0], -self.direction[1])
         if new_direction != opposite:
             self.direction = new_direction
 
     def move(self):
-        """Move snake."""
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
         new_head = (
@@ -94,14 +91,15 @@ class Snake(GameObject):
         self.positions.pop()
         self.position = new_head
 
+    def grow(self):
+        self.positions.append(self.positions[-1])
+
     def reset(self):
-        """Reset snake to initial state."""
         self.positions = [(100, 100)]
         self.direction = RIGHT
         self.position = self.positions[0]
 
     def draw(self, surface):
-        """Draw snake."""
         for position in self.positions:
             rect = pygame.Rect(
                 position[0],
@@ -110,7 +108,6 @@ class Snake(GameObject):
                 GRID_SIZE,
             )
             pygame.draw.rect(surface, self.body_color, rect)
-            pygame.draw.rect(surface, (0, 0, 0), rect, 1)
 
 
 def handle_keys(snake):
@@ -133,28 +130,26 @@ def handle_keys(snake):
 
 def main():
     """Main game loop."""
-    global screen, clock
-
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Snake')
-    clock = pygame.time.Clock()
-
     snake = Snake()
     apple = Apple()
 
-    while True:
+    running = True
+    while running:
         handle_keys(snake)
         snake.move()
 
         if snake.get_head_position() == apple.position:
+            snake.grow()
             apple.randomize_position(snake.positions)
+
+        if snake.get_head_position() in snake.positions[1:]:
+            snake.reset()
 
         screen.fill(BOARD_BACKGROUND_COLOR)
         apple.draw(screen)
         snake.draw(screen)
-        pygame.display.flip()
-        clock.tick(10)
+        pygame.display.update()
+        clock.tick(20)
 
 
 if __name__ == '__main__':
