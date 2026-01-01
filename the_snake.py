@@ -137,7 +137,7 @@ def main():
 
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Snake")
+    pygame.display.set_caption('Snake')
     clock = pygame.time.Clock()
 
     snake = Snake()
@@ -157,5 +157,5 @@ def main():
         clock.tick(10)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
