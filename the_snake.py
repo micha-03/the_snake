@@ -3,8 +3,8 @@
 
 import random
 import sys
-import pygame
 
+import pygame
 
 # Constants
 SCREEN_WIDTH = 800
